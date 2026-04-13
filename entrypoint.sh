@@ -98,4 +98,5 @@ sudo cp -fv PKGBUILD "$WORKPATH"/PKGBUILD
 if [[ -e .SRCINFO ]]; then
     sudo cp -fv .SRCINFO "$WORKPATH"/.SRCINFO
 fi
+sudo cp -fv *.pkg* "$WORKPATH"/
 echo "::endgroup::"
