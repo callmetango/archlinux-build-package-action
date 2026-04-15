@@ -44,7 +44,7 @@ if [ -n $INPUT_REPONAME ] && [ -d "/github/workspace/$INPUT_REPOPATH" ]; then
     sudo sh -c "cat <<<EOF >> /etc/pacman.conf
 
 [$INPUT_REPONAME]
-Server = "file:///github/workspace/$INPUT_REPOPATH"
+Server = \"file:///github/workspace/$INPUT_REPOPATH\"
 SigLevel = Optional
 EOF
 "
