@@ -81,19 +81,17 @@ if [[ $INPUT_UPDPKGSUMS == true ]]; then
     echo "::endgroup::"
 fi
 
-# Generate .SRCINFO
 if [[ $INPUT_SRCINFO == true ]]; then
-    echo "::group::Generating new .SRCINFO based on PKGBUILD"
+    log_group "Generating new .SRCINFO based on PKGBUILD"
     makepkg --printsrcinfo >.SRCINFO
     git --no-pager diff .SRCINFO
-    echo "::endgroup::"
+    log_endgroup
 fi
 
-# Validate with namcap
 if [[ $INPUT_NAMCAP == true ]]; then
-    echo "::group::Validating PKGBUILD with namcap"
+    log_group "Validating PKGBUILD with namcap"
     namcap -i PKGBUILD
-    echo "::endgroup::"
+    log_endgroup
 fi
 
 # Install depends using yay from aur
@@ -110,15 +108,6 @@ if [[ -n $INPUT_FLAGS ]]; then
     log_endgroup
 fi
 
-if [ -n "$INPUT_REPONAME" } ; then
-    REPOPATH="$GITHUB_WORKSPACE/$INPUT_REPOPATH"
-    REPOPATH=${REPOPATH%/}
-
-    log_group "Adding package to repo"
-    repo-add "$INPUT_REPONAME".db.tar.zst "$REPOPATH"/*.pkg.* *.pkg.*
-    log_endgroup
-fi
-
 WORKPATH=$GITHUB_WORKSPACE/$INPUT_PATH
 WORKPATH=${WORKPATH%/}
 echo "::group::Copying files from $HOME/work to $WORKPATH"
@@ -130,9 +119,11 @@ fi
 sudo cp -fv *.pkg* "$WORKPATH"/
 
 if [ -n $INPUT_REPONAME ]; then
+    log_group "Adding package to repo"
     REPOPATH="$GITHUB_WORKSPACE/$INPUT_REPOPATH"
     REPOPATH=${REPOPATH%/}
-    sudo cp -fv *$INPUT_REPONAME".db* "$REPOPATH"
+    sudo repo-add "$REPOPATH"/"$INPUT_REPONAME.db$INPUT_REPOEXT" *.pkg.*
+    log_endgroup
 fi
 
 echo "::endgroup::"
