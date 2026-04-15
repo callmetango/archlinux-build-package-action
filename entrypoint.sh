@@ -110,6 +110,8 @@ if [[ -n $INPUT_FLAGS ]]; then
     log_endgroup
 fi
 
+echo "GITHUB_ENV: $GITHUB_ENV"
+
 source PKGBUILD
 echo "PKGVER='$pkgver'" >> "$GITHUB_ENV"
 echo "PKGREL='$pkgrel'" >> "$GITHUB_ENV"
