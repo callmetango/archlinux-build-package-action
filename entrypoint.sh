@@ -111,8 +111,8 @@ if [[ -n $INPUT_FLAGS ]]; then
 fi
 
 source PKGBUILD
-echo "PKGVER='$pkgver'" | sudo tee -a "$GITHUB_ENV"
-echo "PKGREL='$pkgrel'" | sudo tee -a "$GITHUB_ENV"
+echo "PKGVER=$pkgver" | sudo tee -a "$GITHUB_ENV"
+echo "PKGREL=$pkgrel" | sudo tee -a "$GITHUB_ENV"
 
 WORKPATH=$GITHUB_WORKSPACE/$INPUT_PATH
 WORKPATH=${WORKPATH%/}
