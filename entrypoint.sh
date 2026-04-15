@@ -113,8 +113,8 @@ fi
 echo "GITHUB_ENV: $GITHUB_ENV"
 
 source PKGBUILD
-echo "PKGVER='$pkgver'" >> "$GITHUB_ENV"
-echo "PKGREL='$pkgrel'" >> "$GITHUB_ENV"
+sudo echo "PKGVER='$pkgver'" >> "$GITHUB_ENV"
+sudo echo "PKGREL='$pkgrel'" >> "$GITHUB_ENV"
 
 WORKPATH=$GITHUB_WORKSPACE/$INPUT_PATH
 WORKPATH=${WORKPATH%/}
