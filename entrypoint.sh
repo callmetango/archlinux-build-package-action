@@ -41,12 +41,13 @@ log_endgroup
 
 if [ -n $INPUT_REPONAME ] && [ -d "/github/workspace/$INPUT_REPOPATH" ]; then
     log_group "Adding local package repository"
-    sudo cat <<<EOF >> /etc/pacman.conf
+    sudo sh -c "cat <<<EOF >> /etc/pacman.conf
 
 [$INPUT_REPONAME]
 Server = "file:///github/workspace/$INPUT_REPOPATH"
 SigLevel = Optional
 EOF
+"
     log_endgroup
 fi
 
