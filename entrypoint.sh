@@ -110,6 +110,10 @@ if [[ -n $INPUT_FLAGS ]]; then
     log_endgroup
 fi
 
+source PKGBUILD
+echo "pkgver='$pkgver'" >> GITHUB_ENV
+echo "pkgrel='$pkgrel'" >> GITHUB_ENV
+
 WORKPATH=$GITHUB_WORKSPACE/$INPUT_PATH
 WORKPATH=${WORKPATH%/}
 echo "::group::Copying files from $HOME/work to $WORKPATH"
