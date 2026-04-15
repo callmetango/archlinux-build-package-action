@@ -110,11 +110,9 @@ if [[ -n $INPUT_FLAGS ]]; then
     log_endgroup
 fi
 
-echo "GITHUB_ENV: $GITHUB_ENV"
-
 source PKGBUILD
-sudo echo "PKGVER='$pkgver'" >> "$GITHUB_ENV"
-sudo echo "PKGREL='$pkgrel'" >> "$GITHUB_ENV"
+echo "PKGVER='$pkgver'" | sudo tee -a "$GITHUB_ENV"
+echo "PKGREL='$pkgrel'" | sudo tee -a "$GITHUB_ENV"
 
 WORKPATH=$GITHUB_WORKSPACE/$INPUT_PATH
 WORKPATH=${WORKPATH%/}
