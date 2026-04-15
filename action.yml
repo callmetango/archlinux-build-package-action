@@ -51,6 +51,14 @@ inputs:
     description: 'PGP key server'
     default: 'hkps://keyserver.ubuntu.com'
     required: false
+  reponame:
+    description: 'name of the repository'
+    default: ''
+    required: false
+  repopath:
+    description: 'path of the repository'
+    default: ''
+    required: false
 
 runs:
   using: 'docker'
@@ -67,3 +75,5 @@ runs:
     - ${{ inputs.archlinux_keyring }}
     - ${{ inputs.pgpkeys }}
     - ${{ inputs.pgpkeyserver }}
+    - ${{ inputs.reponame }}
+    - ${{ inputs.repopath }}
