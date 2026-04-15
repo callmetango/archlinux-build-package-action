@@ -10,6 +10,9 @@ log_endgroup() {
 	printf "::endgroup::\n"
 }
 
+REPOPATH="$GITHUB_WORKSPACE/$INPUT_REPOPATH"
+REPOPATH=${REPOPATH%/}
+
 # Set path
 HOME=/home/builder
 echo "::group::Copying files from $GITHUB_WORKSPACE to $HOME/work"
@@ -39,7 +42,7 @@ else
 fi
 log_endgroup
 
-if [ -n $INPUT_REPONAME ] && [ -d "/github/workspace/$INPUT_REPOPATH" ]; then
+if [ -n $INPUT_REPONAME ] && [ -d "${REPOPATH}/${INPUT_REPONAME}.db" ]; then
     log_group "Adding local package repository"
     sudo tee /etc/pacman.conf <<- EOF
 		[$INPUT_REPONAME]
