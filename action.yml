@@ -55,6 +55,10 @@ inputs:
     description: 'name of the repository'
     default: ''
     required: false
+  repoext:
+    description: 'extension of the repository'
+    default: '.tar.gz'
+    required: false
   repopath:
     description: 'path of the repository'
     default: ''
@@ -76,4 +80,5 @@ runs:
     - ${{ inputs.pgpkeys }}
     - ${{ inputs.pgpkeyserver }}
     - ${{ inputs.reponame }}
+    - ${{ inputs.repoext }}
     - ${{ inputs.repopath }}
