@@ -42,7 +42,7 @@ else
 fi
 log_endgroup
 
-if [ -n $INPUT_REPONAME ] && [ -d "${REPOPATH}/${INPUT_REPONAME}.db" ]; then
+if [ -n $INPUT_REPONAME ] && [ -f "${REPOPATH}/${INPUT_REPONAME}.db" ]; then
     log_group "Adding local package repository"
     sudo tee /etc/pacman.conf <<- EOF
 		[$INPUT_REPONAME]
