@@ -15,8 +15,8 @@ RUN git clone https://aur.archlinux.org/yay-bin.git
 RUN cd yay-bin && makepkg -si --noconfirm
 
 # Copy files
-COPY LICENSE README.md /
-COPY entrypoint.sh /entrypoint.sh
+COPY github-log.sh LICENSE README.md /
+COPY --chmod=755 entrypoint.sh /entrypoint.sh
 
 # Set entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
