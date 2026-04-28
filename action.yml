@@ -21,10 +21,12 @@ inputs:
     required: false
   updpkgsums:
     description: 'Update checksums on PKGBUILD'
+    type: boolean
     default: 'false'
     required: false
   srcinfo:
     description: 'Generate new .SRCINFO'
+    type: boolean
     default: 'false'
     required: false
   flags:
@@ -33,30 +35,41 @@ inputs:
     required: false
   namcap:
     description: 'Validate package with namcap'
+    type: boolean
     default: 'true'
     required: false
   aur:
     description: 'Resolve dependencies using yay'
+    type: boolean
     default: 'false'
     required: false
   archlinux_keyring:
     description: 'Update archlinux-keyring'
+    type: boolean
     default: 'true'
     required: false
   pgpkeys:
     description: 'Comma-separated pgp keys'
+    type: string
     default: ''
     required: false
   pgpkeyserver:
     description: 'PGP key server'
+    type: string
     default: 'hkps://keyserver.ubuntu.com'
     required: false
   reponame:
     description: 'name of the repository'
+    type: string
     default: ''
     required: false
   repoext:
     description: 'extension of the repository'
+    type: choice
+    options:
+      - ''
+      - '.tar.gz'
+      - '.tar.zst'
     default: '.tar.gz'
     required: false
   repopath:
