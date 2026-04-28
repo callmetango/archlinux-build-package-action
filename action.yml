@@ -76,7 +76,7 @@ runs:
     - ${{ inputs.flags }}
     - ${{ inputs.namcap }}
     - ${{ inputs.aur }}
-    - ${{ inputs.archlinux_keyring }}
+    - ARCHLINX_KEYRING='${{ inputs.archlinux_keyring }}'
     - ${{ inputs.pgpkeys }}
     - ${{ inputs.pgpkeyserver }}
     - ${{ inputs.reponame }}
