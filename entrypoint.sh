@@ -49,21 +49,18 @@ if [[ $INPUT_ARCHLINUX_KEYRING == true ]]; then
     sudo pacman -Syu --noconfirm archlinux-keyring
 fi
 
-# Update pkgver
 if [[ -n $INPUT_PKGVER ]]; then
     glgrp "Updating pkgver on PKGBUILD"
     sed -i "s:^pkgver=.*$:pkgver=$INPUT_PKGVER:g" PKGBUILD
     git --no-pager diff PKGBUILD
 fi
 
-# Update pkgrel
 if [[ -n $INPUT_PKGREL ]]; then
     glgrp "Updating pkgrel on PKGBUILD"
     sed -i "s:^pkgrel=.*$:pkgrel=$INPUT_PKGREL:g" PKGBUILD
     git --no-pager diff PKGBUILD
 fi
 
-# Update checksums
 if [[ $INPUT_UPDPKGSUMS == true ]]; then
     glgrp "Updating checksums on PKGBUILD"
     updpkgsums
@@ -81,7 +78,6 @@ if [[ $INPUT_NAMCAP == true ]]; then
     namcap -i PKGBUILD
 fi
 
-# Install depends using yay from aur
 if [[ $INPUT_AUR == true ]]; then
     glgrp "Installing depends using yay"
     source PKGBUILD
