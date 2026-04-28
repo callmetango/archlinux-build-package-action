@@ -39,7 +39,7 @@ inputs:
     description: 'Resolve dependencies using yay'
     default: 'false'
     required: false
-  archlinux_keyring:
+  archlinux-keyring:
     description: 'Update archlinux-keyring'
     default: 'true'
     required: false
@@ -76,7 +76,7 @@ runs:
     - ${{ inputs.flags }}
     - ${{ inputs.namcap }}
     - ${{ inputs.aur }}
-    - ARCHLINX_KEYRING='${{ inputs.archlinux_keyring }}'
+    - ARCHLINX_KEYRING='${{ inputs.archlinux-keyring }}'
     - ${{ inputs.pgpkeys }}
     - ${{ inputs.pgpkeyserver }}
     - ${{ inputs.reponame }}
