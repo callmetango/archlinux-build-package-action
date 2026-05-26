@@ -1,0 +1,201 @@
+name: Arch Linux packaging action
+description: GitHub Action to create and modify packages for Arch Linux
+author: callmetango
+
+inputs:
+  path:
+    description: Location for this action to run
+  docker-image:
+    description: the Docker image to run the build in
+    default: docker.io/library/archlinux:multilib-devel
+
+  token:
+    type: string
+
+  # Updates to the PKGBUILD
+  pkgver:
+    description: Set pkgver of the PKGBUILD
+  pkgrel:
+    description: Set pkgrel of the PKGBUILD
+  updpkgsums:
+    description: Update the checksums of the PKGBUILD
+    type: boolean
+  srcinfo:
+    description: Generate new .SRCINFO
+    type: choice
+    options:
+      - auto
+      - true
+      - false
+    default: auto
+
+  makepkg:
+    description: run makepkg to build the given PKGBUILD
+    type: boolean
+    default: true
+  makepkg-opts:
+    description: Options to pass to makepkg
+    default: '-cfs --noconfirm'
+
+  namcap:
+    description: Validate package with namcap
+    type: boolean
+  namcap-opts:
+    description: Options to pass to namcap
+    type: string
+    default: '-i'
+  aur:
+    description: Resolve the PKGBUILD dependencies using yay
+    type: boolean
+
+  # PGP key handling
+  keyrings:
+    description: The keyring packages to update and use
+    type: string
+    default: archlinux-keyring
+  pgp-key:
+    description: PGP key file to use for verifying packages
+    type: string
+  pgp-keys:
+    description: Comma-separated list of PGP key IDs for verifying packages
+    type: string
+  pgp-keyserver:
+    description: PGP key server
+    type: string
+    default: hkps://keyserver.ubuntu.com
+  signing-key:
+    description: The private OpenPGP key to sign the packages
+    type: string
+  signing-key-password:
+    description: The password of the signing key
+    type: string
+
+  # Custom repository handling
+  custom-repo-name:
+    description: name of the custom repository
+  custom-repo-url:
+    description: URL of the custom repository
+  custom-repo-key:
+    description: PGP key of the custom repository\'s signing key (ASCII armored)
+  custom-repo-keyid:
+    description: PGP key ID of the custom repository\'s signing key
+  custom-repo-siglevel:
+    description: SigLevel of the custom repository
+    default: Required TrustedOnly
+
+  dependencies-path:
+    description: A directory path containing packages required to built the PKGBUILD
+    type: string
+
+  # Package database handling
+  repo-add-name:
+    description: The name of the package database
+  repo-add-compression:
+    description: The compression of the (bzip2, …, zst)
+    default: zst
+  repo-add-path:
+    description: The path of the packages to add to the database
+  repo-add-opts:
+    description: Options to pass to repo-add. See `man 8 repo-add` for more.
+
+outputs:
+  pkgbase:
+    description: pkgbase of the PKGBUILD
+    value: ${{ steps.random-number-generator.outputs.pkgbase }}
+  pkgname:
+    description: pkgname of the PKGBUILD
+    value: ${{ steps.random-number-generator.outputs.pkgname }}
+  pkgver:
+    description: pkgver of the PKGBUILD
+    value: ${{ steps.random-number-generator.outputs.pkgver }}
+  pkgrel:
+    description: pkgrel of the PKGBUILD
+    value: ${{ steps.random-number-generator.outputs.pkgrel }}
+
+runs:
+  using: composite
+  steps:
+    - name: Build Docker image
+      shell: sh
+      env:
+        DOCKER_IMAGE: ${{ inputs.docker-image }}
+        INSTALL_NAMCAP: ${{ inputs.namcap }}
+        INSTALL_YAY: ${{ inputs.aur }}
+      working-directory: ${{ github.action_path }}
+      run: |
+        set -u
+        . ./scripts/gh-helpers.sh
+
+        glgrp "Building Docker image"
+
+        export RUNNER_UID="$(id -ru runner)"
+        ADD_PACKAGES=''
+        test "$INSTALL_NAMCAP" && export ADD_PACKAGES='namcap'
+
+        docker build \
+            --build-arg ADD_PACKAGES --build-arg DOCKER_IMAGE \
+            --build-arg INSTALL_YAY --build-arg RUNNER_UID \
+            --tag buildhost .
+        glgrpend
+
+    - name: Run Docker image
+      id: random-number-generator
+      shell: sh
+      env:
+        INPUT_SIGNING_KEY: ${{ inputs.signing-key }}
+        INPUT_SIGNING_KEY_PASSWORD: ${{ inputs.signing-key-password }}
+        CONT_ENV: /github/env
+        CONT_OUTPUT: /github/filecommands
+        CONT_WORKSPACE: /github/workspace
+        CONT_RUNNER_TEMP: /github/runner_temp
+      working-directory: ${{ github.action_path }}
+      run: |
+        set -u
+
+        docker run \
+          \
+          -e GH_TOKEN='${{ inputs.token }}' \
+          \
+          --volume "${GITHUB_ENV}:${CONT_ENV}" \
+          --volume "${GITHUB_OUTPUT}:${CONT_OUTPUT}" \
+          --volume "${GITHUB_WORKSPACE}:${CONT_WORKSPACE}" \
+          --volume "${RUNNER_TEMP}:${CONT_RUNNER_TEMP}" \
+          \
+          -e GITHUB_ENV="$CONT_ENV" \
+          -e GITHUB_OUTPUT="$CONT_OUTPUT" \
+          -e GITHUB_WORKSPACE="$CONT_WORKSPACE" \
+          -e RUNNER_TEMP="$CONT_RUNNER_TEMP" \
+          \
+          -e INPUT_PATH='${{ inputs.path }}' \
+          \
+          -e INPUT_PKGVER='${{ inputs.pkgver }}' \
+          -e INPUT_PKGREL='${{ inputs.pkgrel }}' \
+          -e INPUT_UPDPKGSUMS='${{ inputs.updpkgsums }}' \
+          -e INPUT_SRCINFO='${{ inputs.srcinfo }}' \
+          -e INPUT_AUR='${{ inputs.aur }}' \
+          \
+          -e INPUT_MAKEPKG='${{ inputs.makepkg }}' \
+          -e INPUT_MAKEPKG_OPTS='${{ inputs.makepkg-opts }}' \
+          -e INPUT_NAMCAP='${{ inputs.namcap }}' \
+          -e INPUT_NAMCAP_OPTS='${{ inputs.namcap-opts }}' \
+          \
+          -e INPUT_KEYRINGS='${{ inputs.keyrings }}' \
+          -e INPUT_PGP_KEY='${{ inputs.pgp-key }}' \
+          -e INPUT_PGP_KEYS='${{ inputs.pgp-keys }}' \
+          -e INPUT_PGP_KEYSERVER='${{ inputs.pgp-keyserver }}' \
+          -e INPUT_SIGNING_KEY \
+          -e INPUT_SIGNING_KEY_PASSWORD \
+          \
+          -e INPUT_CUSTOM_REPO_NAME='${{ inputs.custom-repo-name }}' \
+          -e INPUT_CUSTOM_REPO_URL='${{ inputs.custom-repo-url }}' \
+          -e INPUT_CUSTOM_REPO_KEY='${{ inputs.custom-repo-key }}' \
+          -e INPUT_CUSTOM_REPO_KEYID='${{ inputs.custom-repo-keyid }}' \
+          -e INPUT_CUSTOM_REPO_SIGLEVEL='${{ inputs.custom-repo-siglevel }}' \
+          \
+          -e INPUT_DEPENDENCIES_PATH='${{ inputs.dependencies-path }}' \
+          \
+          -e INPUT_REPO_ADD_NAME='${{ inputs.repo-add-name }}' \
+          -e INPUT_REPO_ADD_EXT='${{ inputs.repo-add-compression }}' \
+          -e INPUT_REPO_ADD_PATH='${{ inputs.repo-add-path }}' \
+          -e INPUT_REPO_ADD_OPTS='${{ inputs.repo-add-opts }}' \
+          --name my-buildhost buildhost
