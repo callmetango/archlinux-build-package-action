@@ -54,17 +54,19 @@ if [ "$INPUT_KEYRINGS" ]; then
 	sudo pacman -Syu --needed --noconfirm $INPUT_KEYRINGS
 fi
 
+# The order of repo entries matters. See `man 5 pacman.conf`.
+
+if [ "$INPUT_DEPENDENCIES_PATH" ]; then
+	glgrp "Adding dependencies repository"
+	"$SCRIPTS_PATH"/add-dependencies-repo.sh "$GITHUB_WORKSPACE/$INPUT_DEPENDENCIES_PATH"
+fi
+
 if [ "$INPUT_CUSTOM_REPO_NAME" ]; then
 	glgrp "Adding custom package repository $INPUT_CUSTOM_REPO_NAME"
 	"$SCRIPTS_PATH"/add-custom-repo.sh \
 		"$INPUT_CUSTOM_REPO_NAME" "$CARCH" \
 		"$INPUT_CUSTOM_REPO_URL" \
 		"$INPUT_CUSTOM_REPO_SIGLEVEL"
-fi
-
-if [ "$INPUT_DEPENDENCIES_PATH" ]; then
-	glgrp "Adding dependencies repository"
-	"$SCRIPTS_PATH"/add-dependencies-repo.sh "$GITHUB_WORKSPACE/$INPUT_DEPENDENCIES_PATH"
 fi
 
 mkdir -p "$BUILDDIR"
