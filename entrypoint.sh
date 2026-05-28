@@ -29,6 +29,7 @@ REPODIR="${REPODIR%/}"
 . "$SCRIPTS_PATH"/gh-helpers.sh
 
 git config --global --add safe.directory "$GITHUB_WORKSPACE"
+git config set --global core.pager ''
 
 # The default alpm user can't read our custom file-based databases...
 sudo sed -i 's/DownloadUser = alpm/DownloadUser = runner/g' /etc/pacman.conf
@@ -78,13 +79,13 @@ cd "${SRCDIR}" || exit 1
 if [ "$INPUT_PKGVER" ]; then
 	glgrp 'Updating pkgver of PKGBUILD'
 	sed -i "s/^pkgver=.*$/pkgver=$INPUT_PKGVER/g" PKGBUILD
-	git --no-pager diff PKGBUILD
+	git diff PKGBUILD
 fi
 
 if [ "$INPUT_PKGREL" ]; then
 	glgrp 'Updating pkgrel of PKGBUILD'
 	sed -i "s/^pkgrel=.*$/pkgrel=$INPUT_PKGREL/g" PKGBUILD
-	git --no-pager diff PKGBUILD
+	git diff PKGBUILD
 fi
 
 if [ "$INPUT_UPDPKGSUMS" = 'true' ]; then
@@ -94,13 +95,13 @@ if [ "$INPUT_UPDPKGSUMS" = 'true' ]; then
 	updpkgsums
 	cp -f "$BUILDDIR"/PKGBUILD "$SRCDIR"/
 	cd "$SRCDIR" || exit 1
-	git --no-pager diff PKGBUILD
+	git diff PKGBUILD
 fi
 
 if [ "$INPUT_SRCINFO" = 'true' ] || [ "$INPUT_SRCINFO" = 'auto' -a -e .SRCINFO ] ; then
 	glgrp "Generating new .SRCINFO based on PKGBUILD"
 	makepkg --printsrcinfo > .SRCINFO
-	git --no-pager diff .SRCINFO
+	git diff .SRCINFO
 fi
 
 if [ "$INPUT_NAMCAP" = 'true' ]; then
