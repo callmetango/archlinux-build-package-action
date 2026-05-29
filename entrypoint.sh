@@ -12,7 +12,8 @@ SCRIPTS_PATH="$HOME"/bin
 SRCDIR="${GITHUB_WORKSPACE}/${INPUT_PATH}"
 SRCDIR="${SRCDIR%/}"
 
-BUILDDIR="$HOME"/work
+BUILDDIR=$(mktemp -d "${TMPDIR:-/tmp}/makepkg.XXXXXX")
+export BUILDDIR # for makepkg
 
 REPODIR="$GITHUB_WORKSPACE"
 if [ "$INPUT_REPO_ADD_PATH" ]; then
@@ -27,6 +28,18 @@ REPODIR="${REPODIR%/}"
 
 # shellcheck source=./scripts/gh-helpers.sh
 . "$SCRIPTS_PATH"/gh-helpers.sh
+
+. ~/.makepkg.conf
+
+test "$INPUT_PKGDEST" && \
+	export PKGDEST="${GITHUB_WORKSPACE}/${INPUT_PKGDEST}"
+test "$INPUT_PKGDEST" = '__INPUT_PATH__' && \
+	export PKGDEST="$SRCDIR"
+
+test "$INPUT_SRCPKGDEST" && \
+	export SRCPKGDEST="${GITHUB_WORKSPACE}/${INPUT_SRCPKGDEST}"
+test "$INPUT_SRCPKGDEST" = '__INPUT_PATH__' && \
+	export SRCPKGDEST="$SRCDIR"
 
 git config --global --add safe.directory "$GITHUB_WORKSPACE"
 git config set --global core.pager ''
@@ -70,7 +83,6 @@ if [ "$INPUT_CUSTOM_REPO_NAME" ]; then
 		"$INPUT_CUSTOM_REPO_SIGLEVEL"
 fi
 
-mkdir -p "$BUILDDIR"
 
 # Main
 
@@ -90,11 +102,7 @@ fi
 
 if [ "$INPUT_UPDPKGSUMS" = 'true' ]; then
 	glgrp 'Updating checksums on PKGBUILD'
-	cp -Rf "$SRCDIR"/* "$BUILDDIR"/
-	cd "$BUILDDIR" || exit 1
 	updpkgsums
-	cp -f "$BUILDDIR"/PKGBUILD "$SRCDIR"/
-	cd "$SRCDIR" || exit 1
 	git diff PKGBUILD
 fi
 
@@ -131,18 +139,17 @@ if [ -e PKGBUILD ]; then
 fi
 
 
-cd "$BUILDDIR" || exit 1
+# Build and Sign
 
 if [ "$INPUT_MAKEPKG" = 'true' ]; then
 	glgrp 'Running makepkg with options'
-	cp -Rf "$SRCDIR"/* "$BUILDDIR"/
 	# shellcheck disable=2086
 	makepkg $INPUT_MAKEPKG_OPTS
 fi
 
 if [ "$INPUT_SIGNING_KEY" ]; then
 	glgrp 'Signing packages'
-	"$SCRIPTS_PATH"/sign-packages.sh . "$INPUT_SIGNING_KEY" \
+	"$SCRIPTS_PATH"/sign-packages.sh "$PKGDEST" "$INPUT_SIGNING_KEY" \
 		"$INPUT_SIGNING_KEY_PASSWORD"
 fi
 
@@ -159,12 +166,6 @@ if [ "$INPUT_REPO_ADD_NAME" ]; then
 
 	find . ! -name '*.sig' -name '*.pkg.tar*' -exec \
 	    sh -c "repo-add $RA_OPTS \"$RA_DB\" \"\$@\" " sh {} +
-fi
-
-
-if [ "$INPUT_MAKEPKG" = 'true' ]; then
-	glgrp "Copying packages from $BUILDDIR to $SRCDIR"
-	cp -fv "$BUILDDIR"/*.pkg.* "$SRCDIR"/
 fi
 
 glgrpend

@@ -36,6 +36,24 @@ inputs:
   makepkg-opts:
     description: Options to pass to makepkg
     default: '-cfs --noconfirm'
+  pkgdest:
+    description: >
+      The path the built binary packages will be placed in. It needs to be a
+      subdirectory of the `$GITHUB_WORKSPACE`. Use the literal `.` (dot) for
+      referencing the `$GITHUB_WORKSPACE` itself.
+      The `pkgdest` defaults to the `path` input from above, identified by
+      the `__INPUT_PATH__` constant. No packages will be output if you provide
+      an empty string.
+    default: __INPUT_PATH__
+  srcpkgdest:
+    description: >
+      The path the built binary packages will be placed in. It needs to be a
+      subdirectory of the `$GITHUB_WORKSPACE`. Use the literal `.` (dot) for
+      referencing the `$GITHUB_WORKSPACE` itself.
+      The `pkgdest` defaults to the `path` input from above, identified by
+      the `__INPUT_PATH__` constant. No packages will be output if you provide
+      an empty string.
+    default: __INPUT_PATH__
 
   namcap:
     description: Validate package with namcap
@@ -176,6 +194,8 @@ runs:
           \
           -e INPUT_MAKEPKG='${{ inputs.makepkg }}' \
           -e INPUT_MAKEPKG_OPTS='${{ inputs.makepkg-opts }}' \
+          -e INPUT_PKGDEST='${{ inputs.pkgdest }}' \
+          -e INPUT_SRCPKGDEST='${{ inputs.srcpkgdest }}' \
           -e INPUT_NAMCAP='${{ inputs.namcap }}' \
           -e INPUT_NAMCAP_OPTS='${{ inputs.namcap-opts }}' \
           \

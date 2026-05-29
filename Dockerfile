@@ -24,18 +24,21 @@ EOF
 WORKDIR "$R_HOME"
 USER "$R_USER"
 
-COPY --chmod=644 config/makepkg.conf .makepkg.conf
-COPY --chmod=755 scripts/*.sh bin/
-COPY --chmod=755 entrypoint.sh /entrypoint.sh
+COPY --chown="$R_USER":"$R_USER" --chmod=644 config/makepkg.conf .makepkg.conf
+COPY --chown="$R_USER":"$R_USER" --chmod=755 scripts/*.sh bin/
 
 RUN <<EOF
 	cd "$R_HOME" # COPY changes the working directory... :facepalm:
-	mkdir -p tmp
+	mkdir -p dependencies tmp
 	if  [ "$INSTALL_YAY" = true ]; then
 		git clone --depth 1 https://aur.archlinux.org/yay-bin.git tmp/yay
 		cd tmp/yay && makepkg -si --noconfirm
 		cd -
 	fi
+
+	. ./.makepkg.conf
+	mkdir -p "$PKGDEST" "$SRCDEST" "$SRCPKGDEST"
 EOF
 
+COPY --chmod=755 entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
