@@ -6,15 +6,18 @@ ARG ADD_PACKAGES
 ARG INSTALL_YAY
 ARG RUNNER_UID
 
+ARG R_USER="runner"
+ARG R_HOME="/home/$R_USER"
+
 RUN pacman -Syu --needed --noconfirm git pacman-contrib $ADD_PACKAGES
 
 RUN <<EOF
 	if id $RUNNER_UID >/dev/null 2>&1; then
-		usermod -d /home/runner -m -l runner
+		usermod -d "$R_HOME" -m -l "$R_USER"
 	else
-		useradd -d /home/runner -m -u $RUNNER_UID runner
+		useradd -d "$R_HOME" -m -u $RUNNER_UID "$R_USER"
 	fi
-	echo 'runner ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+	echo "$R_USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 	if  [ "$INSTALL_YAY" = true ]; then
 		git clone --depth 1 https://aur.archlinux.org/yay-bin.git
@@ -22,15 +25,11 @@ RUN <<EOF
 	fi
 EOF
 
-WORKDIR /home/runner
-USER runner
+WORKDIR "$R_HOME"
+USER "$R_USER"
 
-RUN <<EOF
-	mkdir -p /home/runner/bin
-EOF
-
-COPY --chmod=644 config/makepkg.conf /home/runner/.makepkg.conf
-COPY --chmod=755 scripts/*.sh /home/runner/bin/
+COPY --chmod=644 config/makepkg.conf .makepkg.conf
+COPY --chmod=755 scripts/*.sh bin/
 COPY --chmod=755 entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
