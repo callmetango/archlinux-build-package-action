@@ -15,12 +15,9 @@ SRCDIR="${SRCDIR%/}"
 BUILDDIR=$(mktemp -d "${TMPDIR:-/tmp}/makepkg.XXXXXX")
 export BUILDDIR # for makepkg
 
-REPODIR="$GITHUB_WORKSPACE"
-if [ "$INPUT_REPO_ADD_PATH" ]; then
-	REPODIR="${REPODIR}/${INPUT_REPO_ADD_PATH}"
-elif [ "$INPUT_PATH" ]; then
-	REPODIR="${REPODIR}/${INPUT_PATH}"
-fi
+REPODIR="$INPUT_REPO_ADD_PATH"
+test "$REPODIR" || REPODIR="$INPUT_PATH"
+REPODIR="${GITHUB_WORKSPACE}/${REPODIR}"
 REPODIR="${REPODIR%/}"
 
 
@@ -41,7 +38,7 @@ test "$INPUT_SRCPKGDEST" && \
 test "$INPUT_SRCPKGDEST" = '__INPUT_PATH__' && \
 	export SRCPKGDEST="$SRCDIR"
 
-git config --global --add safe.directory "$GITHUB_WORKSPACE"
+git config set --global --append safe.directory "$GITHUB_WORKSPACE"
 git config set --global core.pager ''
 
 # The default alpm user can't read our custom file-based databases...

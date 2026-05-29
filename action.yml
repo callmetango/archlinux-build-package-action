@@ -9,9 +9,6 @@ inputs:
     description: the Docker image to run the build in
     default: docker.io/library/archlinux:multilib-devel
 
-  token:
-    type: string
-
   # Updates to the PKGBUILD
   pkgver:
     description: Set pkgver of the PKGBUILD
@@ -60,7 +57,6 @@ inputs:
     type: boolean
   namcap-opts:
     description: Options to pass to namcap
-    type: string
     default: '-i'
   aur:
     description: Resolve the PKGBUILD dependencies using yay
@@ -69,24 +65,18 @@ inputs:
   # PGP key handling
   keyrings:
     description: The keyring packages to update and use
-    type: string
     default: archlinux-keyring
   pgp-key:
     description: PGP key file to use for verifying packages
-    type: string
   pgp-keys:
     description: Comma-separated list of PGP key IDs for verifying packages
-    type: string
   pgp-keyserver:
     description: PGP key server
-    type: string
     default: hkps://keyserver.ubuntu.com
   signing-key:
     description: The private OpenPGP key to sign the packages
-    type: string
   signing-key-password:
     description: The password of the signing key
-    type: string
 
   # Custom repository handling
   custom-repo-name:
@@ -103,7 +93,6 @@ inputs:
 
   dependencies-path:
     description: A directory path containing packages required to built the PKGBUILD
-    type: string
 
   # Package database handling
   repo-add-name:
@@ -171,9 +160,6 @@ runs:
         set -u
 
         docker run \
-          \
-          -e GH_TOKEN='${{ inputs.token }}' \
-          \
           --volume "${GITHUB_ENV}:${CONT_ENV}" \
           --volume "${GITHUB_OUTPUT}:${CONT_OUTPUT}" \
           --volume "${GITHUB_WORKSPACE}:${CONT_WORKSPACE}" \
