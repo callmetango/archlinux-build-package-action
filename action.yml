@@ -8,6 +8,11 @@ inputs:
   docker-image:
     description: the Docker image to run the build in
     default: docker.io/library/archlinux:multilib-devel
+  packager:
+    description: >
+      The name of the builder of the packages. If you provide a name and an
+      email address like `John Doe <john@example.com>`, the PGP keys can be
+      looked up through WKD.
 
   # Updates to the PKGBUILD
   pkgver:
@@ -171,6 +176,7 @@ runs:
           -e RUNNER_TEMP="$CONT_RUNNER_TEMP" \
           \
           -e INPUT_PATH='${{ inputs.path }}' \
+          -e INPUT_PACKAGER='${{ inputs.packager }}' \
           \
           -e INPUT_PKGVER='${{ inputs.pkgver }}' \
           -e INPUT_PKGREL='${{ inputs.pkgrel }}' \

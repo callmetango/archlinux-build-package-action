@@ -48,6 +48,11 @@ glgrp "Initializing pacman keys"
 sudo pacman-key --init
 glgrpend
 
+if [ "$INPUT_PACKAGER" ]; then
+	glgrp "Adding packager information to makepkg configuration"
+	printf 'PACKAGER="%s"\n' "$INPUT_PACKAGER" >> ~/.makepkg.conf
+fi
+
 if [ "$INPUT_PGP_KEY" ]; then
 	glgrp "Importing PGP keys"
 	"$SCRIPTS_PATH"/add-pacman-key.sh "$INPUT_PGP_KEY"
