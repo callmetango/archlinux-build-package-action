@@ -30,11 +30,10 @@ rm -f ./*pkg.tar*.sig
 
 repo-add "$REPO_NAME".db.tar ./*.pkg.*
 
-sudo tee -a /etc/pacman.conf <<- EOF
-
-	[$REPO_NAME]
-	Server = file://$(pwd)
-	SigLevel = Optional TrustAll
-EOF
+printf "
+[$REPO_NAME]
+Server = file://$(pwd)
+SigLevel = Optional TrustAll
+" | cat - /etc/pacman.conf | sudo dd status=none of=/etc/pacman.conf
 
 sudo pacman -Sy
