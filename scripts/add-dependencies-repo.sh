@@ -12,18 +12,17 @@ DEPS_PATH="${1%/}"
 REPO_PATH="${2:-$HOME/work/$REPO_NAME}"
 
 # Functions
-exit_0() {
-	printf '%s\n' "$1" ; exit 0
+die() {
+	printf '%s\n' "$2"
+	exit $1
 }
 
 # Main
 
 mkdir -p "$REPO_PATH"
 
-set +e
 cp "$DEPS_PATH"/*.pkg.tar* "$REPO_PATH" 2>/dev/null \
-	|| exit_0 "no dependency packages found, skipping"
-set -e
+	|| die 0 "no dependency packages found, skipping"
 
 cd "$REPO_PATH"
 rm -f ./*pkg.tar*.sig

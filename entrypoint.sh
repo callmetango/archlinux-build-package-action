@@ -80,7 +80,7 @@ fi
 if [ "$INPUT_CUSTOM_REPO_NAME" ]; then
 	glgrp "Adding custom package repository $INPUT_CUSTOM_REPO_NAME"
 	"$SCRIPTS_PATH"/add-custom-repo.sh \
-		"$INPUT_CUSTOM_REPO_NAME" "$CARCH" \
+		"$INPUT_CUSTOM_REPO_NAME" \
 		"$INPUT_CUSTOM_REPO_URL" \
 		"$INPUT_CUSTOM_REPO_SIGLEVEL"
 fi
