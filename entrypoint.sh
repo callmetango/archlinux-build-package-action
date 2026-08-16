@@ -12,9 +12,6 @@ SCRIPTS_PATH="$HOME"/bin
 SRCDIR="${GITHUB_WORKSPACE}/${INPUT_PATH}"
 SRCDIR="${SRCDIR%/}"
 
-BUILDDIR=$(mktemp -d "${TMPDIR:-/tmp}/makepkg.XXXXXX")
-export BUILDDIR # for makepkg
-
 REPODIR="$INPUT_REPO_ADD_PATH"
 test "$REPODIR" || REPODIR="$INPUT_PATH"
 REPODIR="${GITHUB_WORKSPACE}/${REPODIR}"
@@ -70,12 +67,11 @@ if [ "$INPUT_KEYRINGS" ]; then
 	sudo pacman -Syu --needed --noconfirm $INPUT_KEYRINGS
 fi
 
-# The order of repo entries matters. See `man 5 pacman.conf`.
+export CMAKE_BUILD_PARALLEL_LEVEL="$(nproc)"
+test "$INPUT_MOLD" = 'true' && export LDFLAGS="${LDFLAGS:+$LDFLAGS }-fuse-ld=mold"
+test "$INPUT_NINJA" = 'true' && export CMAKE_GENERATOR=Ninja
 
-if [ "$INPUT_DEPENDENCIES_PATH" ]; then
-	glgrp "Adding dependencies repository"
-	"$SCRIPTS_PATH"/add-dependencies-repo.sh "$GITHUB_WORKSPACE/$INPUT_DEPENDENCIES_PATH"
-fi
+# The order of repo entries matters. See `man 5 pacman.conf`.
 
 if [ "$INPUT_CUSTOM_REPO_NAME" ]; then
 	glgrp "Adding custom package repository $INPUT_CUSTOM_REPO_NAME"
@@ -83,6 +79,11 @@ if [ "$INPUT_CUSTOM_REPO_NAME" ]; then
 		"$INPUT_CUSTOM_REPO_NAME" \
 		"$INPUT_CUSTOM_REPO_URL" \
 		"$INPUT_CUSTOM_REPO_SIGLEVEL"
+fi
+
+if [ "$INPUT_DEPENDENCIES_PATH" ]; then
+	glgrp "Adding dependencies repository"
+	"$SCRIPTS_PATH"/add-dependencies-repo.sh "$GITHUB_WORKSPACE/$INPUT_DEPENDENCIES_PATH"
 fi
 
 

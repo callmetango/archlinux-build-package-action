@@ -57,12 +57,21 @@ inputs:
       an empty string.
     default: __INPUT_PATH__
 
+  mold:
+    description: Prefer the mold linker
+    type: boolean
   namcap:
     description: Validate package with namcap
     type: boolean
   namcap-opts:
     description: Options to pass to namcap
     default: '-i'
+  ninja:
+    description: Prefer the ninja build system
+    type: boolean
+  tmpfs:
+    description: Use tmpfs for makepkg's build directory
+    type: boolean
   aur:
     description: Resolve the PKGBUILD dependencies using yay
     type: boolean
@@ -131,7 +140,9 @@ runs:
       shell: sh
       env:
         DOCKER_IMAGE: ${{ inputs.docker-image }}
+        INSTALL_MOLD: ${{ inputs.mold }}
         INSTALL_NAMCAP: ${{ inputs.namcap }}
+        INSTALL_NINJA: ${{ inputs.ninja }}
         INSTALL_YAY: ${{ inputs.aur }}
       working-directory: ${{ github.action_path }}
       run: |
@@ -141,8 +152,11 @@ runs:
         glgrp "Building Docker image"
 
         export RUNNER_UID="$(id -ru runner)"
-        ADD_PACKAGES=''
-        test "$INSTALL_NAMCAP" && export ADD_PACKAGES='namcap'
+        ADD_PACKAGES=
+        test "$INSTALL_MOLD" = true && ADD_PACKAGES="$ADD_PACKAGES mold"
+        test "$INSTALL_NAMCAP" = true && ADD_PACKAGES="$ADD_PACKAGES namcap"
+        test "$INSTALL_NINJA" = true && ADD_PACKAGES="$ADD_PACKAGES ninja"
+        export ADD_PACKAGES
 
         docker build \
             --build-arg ADD_PACKAGES --build-arg DOCKER_IMAGE \
@@ -156,6 +170,7 @@ runs:
       env:
         INPUT_SIGNING_KEY: ${{ inputs.signing-key }}
         INPUT_SIGNING_KEY_PASSWORD: ${{ inputs.signing-key-password }}
+        INPUT_TMPFS: ${{ inputs.tmpfs }}
         CONT_ENV: /github/env
         CONT_OUTPUT: /github/filecommands
         CONT_WORKSPACE: /github/workspace
@@ -164,7 +179,14 @@ runs:
       run: |
         set -u
 
-        docker run \
+        DOPTS=
+        if [ "$INPUT_TMPFS" = 'true' ] ; then
+            mem="$(grep '^MemTotal:' /proc/meminfo | cut -d: -f2 | tr -d ' kB')"
+            size="$((mem * 75 / 100))m"
+            DOPTS="$DOPTS --tmpfs /tmp/makepkg:rw,nosuid,nodev,exec,size=$size"
+        fi
+
+        docker run $DOPTS \
           --volume "${GITHUB_ENV}:${CONT_ENV}" \
           --volume "${GITHUB_OUTPUT}:${CONT_OUTPUT}" \
           --volume "${GITHUB_WORKSPACE}:${CONT_WORKSPACE}" \
@@ -190,6 +212,9 @@ runs:
           -e INPUT_SRCPKGDEST='${{ inputs.srcpkgdest }}' \
           -e INPUT_NAMCAP='${{ inputs.namcap }}' \
           -e INPUT_NAMCAP_OPTS='${{ inputs.namcap-opts }}' \
+          -e INPUT_MOLD='${{ inputs.mold }}' \
+          -e INPUT_NINJA='${{ inputs.ninja }}' \
+          -e INPUT_TMPFS='${{ inputs.tmpfs }}' \
           \
           -e INPUT_KEYRINGS='${{ inputs.keyrings }}' \
           -e INPUT_PGP_KEY='${{ inputs.pgp-key }}' \
