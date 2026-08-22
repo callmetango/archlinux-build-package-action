@@ -26,4 +26,13 @@ Server = $REPO_URL
 SigLevel = $REPO_SIGLEVEL
 " | cat - /etc/pacman.conf | sudo dd status=none of=/etc/pacman.conf
 
-sudo pacman -Sy
+n=10
+delay=1
+while ! sudo pacman --sync --refresh; do
+	n=$((n - 1))
+	test "$n" -gt 0 || exit 1
+
+	printf '::notice title=Repository synchronization::Retrying in %ds...\n' "$delay"
+	sleep "$delay"
+	delay=$((delay * 2))
+done

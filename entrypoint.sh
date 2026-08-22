@@ -146,6 +146,20 @@ fi
 
 if [ "$INPUT_MAKEPKG" = 'true' ]; then
 	glgrp 'Running makepkg with options'
+
+	# Retry downloading dependencies to work around network problems
+	n=10
+	delay=1
+	while ! makepkg --syncdeps --nobuild --noconfirm ; do
+		n=$((n - 1))
+		test "$n" -gt 0 || exit 1
+
+		printf '::notice::Dependency download failed; retrying in %ds...\n' "$delay"
+		sleep "$delay"
+		delay=$((delay * 2))
+		sudo pacman --sync --refresh || true
+	done
+
 	# shellcheck disable=2086
 	makepkg $INPUT_MAKEPKG_OPTS
 fi
